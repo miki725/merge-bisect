@@ -35,9 +35,7 @@ class Commit:
         return cls(*s.split(cls.DELIMITER))
 
     def __repr__(self) -> str:
-        return '<{} "{datetime}" {sha1} "{author}" "{description}">' "".format(
-            self.__class__.__name__, **vars(self)
-        )
+        return f'<{self.__class__.__name__} "{self.datetime}" {self.sha1} "{self.author}" "{self.description}">'
 
     def __hash__(self) -> int:
         return hash(self.sha1)
@@ -91,9 +89,9 @@ def call_on_commit(
         print("\n" * 2)
 
     if c:
-        print("PASSED: {!r}".format(commit))
+        print(f"PASSED: {commit!r}")
     else:
-        print("FAILED: {!r}".format(commit))
+        print(f"FAILED: {commit!r}")
 
     if verbose:
         print("=" * 150)
@@ -139,7 +137,7 @@ def main():
         )
         commits = list(all_commits.keys())
 
-        print("Found {} commits".format(len(commits)))
+        print(f"Found {len(commits)} commits")
         print("")
 
         if len(commits) < 2:
@@ -198,10 +196,10 @@ def main():
         print("Commit log (last commit first):")
         for commit, is_good in reversed(all_commits.items()):
             t = "SUCCESS" if is_good else "FAILURE"
-            print("{}: {!r}".format(t, commit))
+            print(f"{t}: {commit!r}")
 
         print()
-        print("BAD COMMIT: {!r}".format(bad_commit))
+        print(f"BAD COMMIT: {bad_commit!r}")
 
     return 0
 
