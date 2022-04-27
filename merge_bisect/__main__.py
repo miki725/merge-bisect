@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 import argparse
 import datetime
@@ -128,11 +128,11 @@ parser.add_argument(
 )
 
 
-def main():
+def bisect():
     args = parser.parse_args()
 
     with stay_on_branch():
-        all_commits = OrderedDict(
+        all_commits: OrderedDict[Commit, typing.Optional[bool]] = OrderedDict(
             (i, None) for i in reversed(commits_for_n_days(args.days))
         )
         commits = list(all_commits.keys())
@@ -204,5 +204,9 @@ def main():
     return 0
 
 
+def main():
+    exit(bisect())
+
+
 if __name__ == "__main__":
-    exit(main())
+    main()
