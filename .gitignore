@@ -3,4 +3,5 @@ __pycache__
 .mypy_cache
 tags
 build
+dist
 *.egg-info

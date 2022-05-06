@@ -10,10 +10,14 @@ from contextlib import contextmanager
 
 
 class Call:
-    def __init__(self, cmd: typing.List[str]):
-        self._p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    def __init__(self, cmd: typing.List[str], capture_output: bool = True):
+        self._p = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE if capture_output else None,
+            stderr=subprocess.PIPE if capture_output else None,
+        )
         stdout, stderr = self._p.communicate()
-        self.stdout, self.stderr = stdout.decode(), stderr.decode()
+        self.stdout, self.stderr = (stdout or b"").decode(), (stderr or b"").decode()
         self.returncode = self._p.returncode
 
     def __bool__(self) -> bool:
@@ -80,10 +84,13 @@ def stay_on_branch() -> typing.Generator:
 
 
 def call_on_commit(
-    cmd: typing.List[str], commit: Commit, verbose: bool = False
+    cmd: typing.List[str],
+    commit: Commit,
+    capture_output: bool = True,
+    verbose: bool = False,
 ) -> Call:
     checkout(commit.sha1)
-    c = Call(cmd)
+    c = Call(cmd, capture_output=capture_output)
 
     if verbose:
         print("\n" * 2)
@@ -119,6 +126,13 @@ parser.add_argument(
     "in the past against the given command.",
 )
 parser.add_argument(
+    "--no-capture",
+    dest="capture_output",
+    action="store_false",
+    default=True,
+    help="Do not capture stdout/stderr output",
+)
+parser.add_argument(
     "-v",
     "--verbose",
     dest="verbose",
@@ -149,7 +163,12 @@ def bisect():
 
         commit = commits[0]
         commits.remove(commit)
-        commit_call = call_on_commit(args.cmd, commit, args.verbose)
+        commit_call = call_on_commit(
+            cmd=args.cmd,
+            commit=commit,
+            capture_output=args.capture_output,
+            verbose=args.verbose,
+        )
         all_commits[commit] = bool(commit_call)
         if not commit_call:
             print(
@@ -160,7 +179,12 @@ def bisect():
 
         commit = commits[-1]
         commits.remove(commit)
-        commit_call = call_on_commit(args.cmd, commit, args.verbose)
+        commit_call = call_on_commit(
+            cmd=args.cmd,
+            commit=commit,
+            capture_output=args.capture_output,
+            verbose=args.verbose,
+        )
         all_commits[commit] = bool(commit_call)
         if commit_call:
             print(
@@ -172,7 +196,12 @@ def bisect():
         while commits:
             middle = len(commits) // 2
             commit = commits[middle]
-            commit_call = call_on_commit(args.cmd, commit, args.verbose)
+            commit_call = call_on_commit(
+                cmd=args.cmd,
+                commit=commit,
+                capture_output=args.capture_output,
+                verbose=args.verbose,
+            )
             all_commits[commit] = bool(commit_call)
 
             if commit_call:
